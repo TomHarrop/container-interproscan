@@ -10,15 +10,7 @@ ENV PATH="/interproscan:/usr/lib/jvm/java-11-openjdk-amd64/bin:${PATH}"
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN     apt-get clean && \
-        rm -r /var/lib/apt/lists/*
-
-RUN     . /etc/os-release \
-        echo "deb mirror://mirrors.ubuntu.com/mirrors.txt ${UBUNTU_CODENAME} main restricted universe multiverse" >> mirror.txt && \
-        echo "deb mirror://mirrors.ubuntu.com/mirrors.txt ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> mirror.txt && \
-        echo "deb mirror://mirrors.ubuntu.com/mirrors.txt ${UBUNTU_CODENAME}-backports main restricted universe multiverse" >> mirror.txt && \
-        echo "deb mirror://mirrors.ubuntu.com/mirrors.txt ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> mirror.txt && \
-        mv /etc/apt/sources.list /etc/apt/sources.list.bak && \
-        cat mirror.txt /etc/apt/sources.list.bak > /etc/apt/sources.list && \
+        rm -r /var/lib/apt/lists/* && \
         apt-get update && apt-get upgrade -y --fix-missing
 
 RUN     apt-get update && apt-get install -y  --no-install-recommends \
