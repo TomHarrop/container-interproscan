@@ -14,11 +14,30 @@ RUN     apt-get clean && \
         apt-get update && apt-get upgrade -y --fix-missing
 
 RUN     apt-get update && apt-get install -y  --no-install-recommends \
-                build-essential \
-                default-jre-headless \
-                libdw1 \
-                pigz \
-                python3 \
-                wget
+        build-essential \
+        default-jre-headless \
+        libdw1 \
+        pigz \
+        python3 \
+        wget
 
-ENTRYPOINT ["/usr/bin/cat /etc/os-release"]
+RUN     wget \
+        -O /interproscan.tar.gz \
+        https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.65-97.0/interproscan-5.65-97.0-64-bit.tar.gz
+
+RUN     mkdir /interproscan  && \
+        tar \
+        -xvf \
+        /interproscan.tar.gz \
+        -C /interproscan \
+        --strip-components 1 && \
+        rm /interproscan.tar.gz
+
+RUN     sed -i \
+        "s|^\(data.directory=\).*$|\1/interproscan/data|" \
+        /interproscan/interproscan.properties"
+
+RUN     find /interproscan/data -type f -name "*.hmm" \
+        -exec /interproscan/bin/hmmer/hmmer3/3.3/hmmpress {}  \; 
+
+ENTRYPOINT ["/interproscan/interproscan.sh"]
