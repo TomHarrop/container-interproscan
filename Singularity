@@ -46,7 +46,7 @@ From: ubuntu:22.04
     # set up the data directories
     sed -i \
         "s|^\(data.directory=\).*$|\1/interproscan/data|" \
-        /interproscan/interproscan.properties"
+        /interproscan/interproscan.properties
 
     find /interproscan/data -type f -name "*.hmm" \
         -exec /interproscan/bin/hmmer/hmmer3/3.3/hmmpress {}  \; 
