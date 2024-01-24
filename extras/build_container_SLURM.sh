@@ -13,6 +13,12 @@
 module load apptainer/1.1.5-suid
 
 git clone https://github.com/TomHarrop/container-interproscan.git
+(
+    cd container-interproscan || exit 1
+    git pull origin main
+    cd ../ || exit 1
+)
+
 
 VERSION="$(cat container-interproscan/VERSION)"
 

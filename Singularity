@@ -7,6 +7,10 @@ From: ubuntu:22.04
     export PATH="/interproscan:/usr/lib/jvm/java-11-openjdk-amd64/bin:${PATH}"
     export DEBIAN_FRONTEND=noninteractive
 
+%files
+    # FIXME disable after testing
+    interproscan.tar.gz /interproscan.tar.gz
+
 %post
     export DEBIAN_FRONTEND=noninteractive
     export LC_ALL=C
@@ -30,9 +34,10 @@ From: ubuntu:22.04
         wget
 
     # download and install interproscan, takes hours
-    wget \
-    	-O /interproscan.tar.gz \
-        https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.65-97.0/interproscan-5.65-97.0-64-bit.tar.gz
+    # FIXME re-enable after testing
+    # wget \
+    # 	-O /interproscan.tar.gz \
+    #     https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.65-97.0/interproscan-5.65-97.0-64-bit.tar.gz
 
     mkdir /interproscan
     tar \
@@ -55,5 +60,10 @@ From: ubuntu:22.04
         perl -lne '$_=~s/[\s\n]+$//g;if(/^(NAME|ACC) +(.*)$/){if(exists $d{$2}){$d{$2}+=1;$_.="-$d{$2}"}else{$d{$2}=0;}}print "$_"' $f > $f.tmp; mv $f.tmp $f;
     done
 
-    find /interproscan/data -type f -name "*.hmm" \
-        -exec /interproscan/bin/hmmer/hmmer3/3.3/hmmpress {}  \; 
+    # the manual hmmpress command misses files, try with setup.py instead
+    # find /interproscan/data -type f -name "*.hmm" \
+    #     -exec /interproscan/bin/hmmer/hmmer3/3.3/hmmpress {}  \; 
+    (
+        cd /interproscan || exit 1
+        python3 setup.py /interproscan/interproscan.properties
+    )
