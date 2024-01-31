@@ -19,7 +19,6 @@ git clone https://github.com/TomHarrop/container-interproscan.git
     cd ../ || exit 1
 )
 
-
 VERSION="$(cat container-interproscan/VERSION)"
 
 # clobber the bindpath, or it causes errors

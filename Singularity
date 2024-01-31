@@ -8,8 +8,9 @@ From: ubuntu:22.04
     export DEBIAN_FRONTEND=noninteractive
 
 %files
-    # FIXME disable after testing
-    interproscan.tar.gz /interproscan.tar.gz
+    # To test container builds, it's much quicker to download interproscan
+    # separate to the build.
+    # interproscan.tar.gz /interproscan.tar.gz
 
 %post
     export DEBIAN_FRONTEND=noninteractive
@@ -33,11 +34,11 @@ From: ubuntu:22.04
         python3 \
         wget
 
-    # download and install interproscan, takes hours
-    # FIXME re-enable after testing
-    # wget \
-    # 	-O /interproscan.tar.gz \
-    #     https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.65-97.0/interproscan-5.65-97.0-64-bit.tar.gz
+    # Download interproscan. It takes about 10 hours to download and 1.5 hours
+    # to build the container.
+    wget \
+    	-O /interproscan.tar.gz \
+        https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.65-97.0/interproscan-5.65-97.0-64-bit.tar.gz
 
     mkdir /interproscan
     tar \
@@ -53,16 +54,14 @@ From: ubuntu:22.04
         "s|^\(data.directory=\).*$|\1/interproscan/data|" \
         /interproscan/interproscan.properties
 
-    # try to fix the duplicate DB keys.
-    # see https://github.com/ebi-pf-team/interproscan/issues/305#issue-1557871512
+    # Fix the duplicate DB keys. See
+    # https://github.com/ebi-pf-team/interproscan/issues/305#issue-1557871512
     for f in /interproscan/data/sfld/*/sfld.hmm /interproscan/data/superfamily/*/hmmlib_*[0-9]; do
         cp $f $f.bak;
         perl -lne '$_=~s/[\s\n]+$//g;if(/^(NAME|ACC) +(.*)$/){if(exists $d{$2}){$d{$2}+=1;$_.="-$d{$2}"}else{$d{$2}=0;}}print "$_"' $f > $f.tmp; mv $f.tmp $f;
     done
 
-    # the manual hmmpress command misses files, try with setup.py instead
-    # find /interproscan/data -type f -name "*.hmm" \
-    #     -exec /interproscan/bin/hmmer/hmmer3/3.3/hmmpress {}  \; 
+    # set up database
     (
         cd /interproscan || exit 1
         python3 setup.py /interproscan/interproscan.properties
