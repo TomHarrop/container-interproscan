@@ -27,17 +27,27 @@ RUN     wget \
 
 RUN     mkdir /interproscan  && \
         tar \
+        --use-compress-program=pigz \
         -xvf \
         /interproscan.tar.gz \
         -C /interproscan \
         --strip-components 1 && \
         rm /interproscan.tar.gz
 
+# set up the data directories
 RUN     sed -i \
         "s|^\(data.directory=\).*$|\1/interproscan/data|" \
-        /interproscan/interproscan.properties"
+        /interproscan/interproscan.properties
 
-RUN     find /interproscan/data -type f -name "*.hmm" \
-        -exec /interproscan/bin/hmmer/hmmer3/3.3/hmmpress {}  \; 
+# Fix the duplicate DB keys. See
+# https://github.com/ebi-pf-team/interproscan/issues/305#issue-1557871512
+RUN    for f in /interproscan/data/sfld/*/sfld.hmm /interproscan/data/superfamily/*/hmmlib_*[0-9]; do \
+        cp $f $f.bak; \
+        perl -lne '$_=~s/[\s\n]+$//g;if(/^(NAME|ACC) +(.*)$/){if(exists $d{$2}){$d{$2}+=1;$_.="-$d{$2}"}else{$d{$2}=0;}}print "$_"' $f > $f.tmp; mv $f.tmp $f; \
+        done
+
+# set up database
+WORKDIR /interproscan
+RUN        python3 setup.py /interproscan/interproscan.properties
 
 ENTRYPOINT ["/interproscan/interproscan.sh"]
